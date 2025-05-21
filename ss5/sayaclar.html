@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumira - Sayaçlar</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            min-height: 100vh;
+        }
+
+        .sayaclar-section {
+            padding-top: 100px;
+            padding-bottom: 50px;
+        }
+
+        .sayaclar-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .sayaclar-container:hover {
+            transform: translateY(-5px);
+        }
+
+        .sayaclar-header h2 {
+            color: #2c3e50;
+            font-size: 2.2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            position: relative;
+            padding-bottom: 1rem;
+        }
+
+        .sayaclar-header h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, #4361ee, #3f37c9);
+            border-radius: 2px;
+        }
+
+        .sayac-secim {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .secim-btn {
+            background: #fff;
+            border: 2px solid #e4e8f0;
+            border-radius: 12px;
+            padding: 1rem;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #2c3e50;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .secim-btn:hover {
+            background: #f8f9fa;
+            border-color: #4361ee;
+            transform: translateY(-2px);
+        }
+
+        .secim-btn.active {
+            background: linear-gradient(135deg, #4361ee 0%, #3f37c9 100%);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.2);
+        }
+
+        .sayac-panel {
+            background: #fff;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .sayac-panel h2 {
+            color: #2c3e50;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .zaman-gosterge {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .time-unit {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 2.8rem;
+            font-weight: 600;
+            color: #2c3e50;
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 100px;
+            min-height: 100px;
+            aspect-ratio: 1;
+            transition: all 0.3s ease;
+        }
+
+        .time-unit:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .separator {
+            font-size: 2.8rem;
+            color: #2c3e50;
+            margin: 0 0.5rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            height: 100px;
+        }
+
+        .kontrol-butonlari {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .kontrol-butonlari button {
+            background: linear-gradient(135deg, #4361ee 0%, #3f37c9 100%);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .kontrol-butonlari button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+        }
+
+        .kontrol-butonlari button:active {
+            transform: translateY(0);
+        }
+
+        .zaman-girisi {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .zaman-girisi input {
+            width: 100px;
+            padding: 0.8rem;
+            border: 2px solid #e4e8f0;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .zaman-girisi input:focus {
+            border-color: #4361ee;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+
+        .countdown-item {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 1rem;
+        }
+
+        .countdown-item .value {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 2.2rem;
+            font-weight: 600;
+            color: #2c3e50;
+            background: #fff;
+            padding: 1.2rem;
+            border-radius: 50%;
+            min-width: 80px;
+            min-height: 80px;
+            aspect-ratio: 1;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .countdown-item .value:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .countdown-item .label {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .sayaclar-section {
+                padding-top: 80px;
+            }
+
+            .sayac-secim {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+
+            .time-unit {
+                font-size: 2rem;
+                min-width: 70px;
+                min-height: 70px;
+                padding: 1rem;
+            }
+
+            .separator {
+                font-size: 2rem;
+                height: 70px;
+            }
+
+            .countdown-item .value {
+                font-size: 1.8rem;
+                min-width: 60px;
+                min-height: 60px;
+                padding: 0.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sayaclar-container {
+                padding: 1rem;
+            }
+
+            .sayac-panel {
+                padding: 1.5rem;
+            }
+
+            .zaman-gosterge {
+                padding: 1rem;
+            }
+
+            .time-unit {
+                font-size: 1.5rem;
+                min-width: 50px;
+                min-height: 50px;
+                padding: 0.8rem;
+            }
+
+            .separator {
+                font-size: 1.5rem;
+                height: 50px;
+            }
+
+            .kontrol-butonlari {
+                flex-direction: column;
+            }
+
+            .kontrol-butonlari button {
+                width: 100%;
+            }
+
+            .zaman-girisi {
+                flex-direction: column;
+            }
+
+            .zaman-girisi input {
+                width: 100%;
+            }
+
+            .countdown-item .value {
+                font-size: 1.4rem;
+                min-width: 45px;
+                min-height: 45px;
+                padding: 0.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <div class="logo">Lumira</div>
+            <div class="nav-links">
+                <a href="analiz.html"><i class="fas fa-chart-line"></i> Analiz</a>
+                <a href="pano.html"><i class="fas fa-thumbtack"></i> Mantar Pano</a>
+                <a href="oyunlar.html"><i class="fas fa-gamepad"></i> Oyunlar</a>
+                <a href="sayaclar.html" class="active"><i class="fas fa-stopwatch"></i> Sayaçlar</a>
+                <a href="homework.html"><i class="fas fa-tasks"></i> Ödev ve Hedefler</a>
+                <a href="profil.html"><i class="fas fa-user"></i> Profilim</a>
+                <a href="chat.html"><i class="fas fa-robot"></i> Yapay Zeka</a>
+            </div>
+            <div class="menu-button">☰</div>
+        </div>
+    </nav>
+
+    <section class="sayaclar-section">
+        <div class="container">
+            <div class="sayaclar-container">
+                <div class="sayaclar-header">
+                    <h2>Sayaçlar</h2>
+                </div>
+                <div class="sayac-secim">
+                    <button class="secim-btn active" data-target="kronometre"><i class="fas fa-stopwatch"></i> Kronometre</button>
+                    <button class="secim-btn" data-target="tyt"><i class="fas fa-calendar-alt"></i> TYT Geri Sayım</button>
+                    <button class="secim-btn" data-target="ayt"><i class="fas fa-calendar-alt"></i> AYT Geri Sayım</button>
+                    <button class="secim-btn" data-target="tyt-deneme"><i class="fas fa-hourglass-half"></i> TYT Deneme</button>
+                    <button class="secim-btn" data-target="ayt-deneme"><i class="fas fa-hourglass-half"></i> AYT Deneme</button>
+                    <button class="secim-btn" data-target="ozel"><i class="fas fa-user-clock"></i> Özel Geri Sayım</button>
+                </div>
+
+                <div class="sayac-panel" id="kronometre-panel">
+                    <h2>Kronometre</h2>
+                    <div class="zaman-gosterge" id="kronometre-zaman">
+                        <span class="time-unit hours">00</span><span class="separator">:</span><span class="time-unit minutes">00</span><span class="separator">:</span><span class="time-unit seconds">00</span>
+                    </div>
+                    <div class="kontrol-butonlari">
+                        <button id="kronometre-baslat"><i class="fas fa-play"></i> Başlat</button>
+                        <button id="kronometre-sifirla"><i class="fas fa-redo"></i> Sıfırla</button>
+                        <button id="kronometre-tam-ekran" class="tam-ekran-btn"><i class="fas fa-expand"></i> Tam Ekran</button>
+                    </div>
+                </div>
+
+                <div class="sayac-panel hidden" id="tyt-panel">
+                    <h2>TYT Sınavına Kalan Süre</h2>
+                    <div class="zaman-gosterge countdown" id="tyt-zaman">
+                        <div class="countdown-item">
+                            <span class="value days">0</span>
+                            <span class="label">Gün</span>
+                        </div>
+                        <div class="countdown-item">
+                            <span class="value hours">0</span>
+                            <span class="label">Saat</span>
+                        </div>
+                        <div class="countdown-item">
+                            <span class="value minutes">0</span>
+                            <span class="label">Dakika</span>
+                        </div>
+                        <div class="countdown-item">
+                            <span class="value seconds">0</span>
+                            <span class="label">Saniye</span>
+                        </div>
+                    </div>
+                    <div class="kontrol-butonlari">
+                        <button id="tyt-tam-ekran" class="tam-ekran-btn"><i class="fas fa-expand"></i> Tam Ekran</button>
+                    </div>
+                </div>
+
+                <div class="sayac-panel hidden" id="ayt-panel">
+                    <h2>AYT Sınavına Kalan Süre</h2>
+                    <div class="zaman-gosterge countdown" id="ayt-zaman">
+                        <div class="countdown-item">
+                            <span class="value days">0</span>
+                            <span class="label">Gün</span>
+                        </div>
+                        <div class="countdown-item">
+                            <span class="value hours">0</span>
+                            <span class="label">Saat</span>
+                        </div>
+                        <div class="countdown-item">
+                            <span class="value minutes">0</span>
+                            <span class="label">Dakika</span>
+                        </div>
+                        <div class="countdown-item">
+                            <span class="value seconds">0</span>
+                            <span class="label">Saniye</span>
+                        </div>
+                    </div>
+                    <div class="kontrol-butonlari">
+                        <button id="ayt-tam-ekran" class="tam-ekran-btn"><i class="fas fa-expand"></i> Tam Ekran</button>
+                    </div>
+                </div>
+
+                <div class="sayac-panel hidden" id="tyt-deneme-panel">
+                    <h2>TYT Deneme Süresi</h2>
+                    <div class="zaman-gosterge" id="tyt-deneme-zaman">
+                        <span class="time-unit minutes">165</span><span class="separator">:</span><span class="time-unit seconds">00</span>
+                    </div>
+                    <div class="kontrol-butonlari">
+                        <button id="tyt-deneme-baslat"><i class="fas fa-play"></i> Başlat</button>
+                        <button id="tyt-deneme-sifirla"><i class="fas fa-redo"></i> Sıfırla</button>
+                        <button id="tyt-deneme-tam-ekran" class="tam-ekran-btn"><i class="fas fa-expand"></i> Tam Ekran</button>
+                        <button id="tyt-deneme-ses-sec" class="ses-sec-btn"><i class="fas fa-music"></i> Ses Seç</button>
+                    </div>
+                </div>
+
+                <div class="sayac-panel hidden" id="ayt-deneme-panel">
+                    <h2>AYT Deneme Süresi</h2>
+                    <div class="zaman-gosterge" id="ayt-deneme-zaman">
+                        <span class="time-unit minutes">180</span><span class="separator">:</span><span class="time-unit seconds">00</span>
+                    </div>
+                    <div class="kontrol-butonlari">
+                        <button id="ayt-deneme-baslat"><i class="fas fa-play"></i> Başlat</button>
+                        <button id="ayt-deneme-sifirla"><i class="fas fa-redo"></i> Sıfırla</button>
+                        <button id="ayt-deneme-tam-ekran" class="tam-ekran-btn"><i class="fas fa-expand"></i> Tam Ekran</button>
+                        <button id="ayt-deneme-ses-sec" class="ses-sec-btn"><i class="fas fa-music"></i> Ses Seç</button>
+                    </div>
+                </div>
+
+                <div class="sayac-panel hidden" id="ozel-panel">
+                    <h2>Özel Geri Sayım Ayarla</h2>
+                    <div class="zaman-girisi">
+                        <input type="number" id="saat" placeholder="Saat" min="0" value="0">
+                        <input type="number" id="dakika" placeholder="Dakika" min="0" max="59" value="0">
+                        <input type="number" id="saniye" placeholder="Saniye" min="0" max="59" value="0">
+                    </div>
+                    <div class="zaman-gosterge" id="ozel-zaman">
+                        <span class="time-unit hours">00</span><span class="separator">:</span><span class="time-unit minutes">00</span><span class="separator">:</span><span class="time-unit seconds">00</span>
+                    </div>
+                    <div class="kontrol-butonlari">
+                        <button id="ozel-baslat"><i class="fas fa-play"></i> Başlat</button>
+                        <button id="ozel-sifirla"><i class="fas fa-redo"></i> Sıfırla</button>
+                        <button id="ozel-tam-ekran" class="tam-ekran-btn"><i class="fas fa-expand"></i> Tam Ekran</button>
+                        <button id="ozel-ses-sec" class="ses-sec-btn"><i class="fas fa-music"></i> Ses Seç</button>
+                    </div>
+                </div>
+
+                <audio id="alarm-sesi" preload="auto">
+                    <source src="sound/Kayıt.mp3" type="audio/mpeg">
+                    <source src="sound/Kayıt.wav" type="audio/wav">
+                </audio>
+                <input type="file" id="ses-secici" accept="audio/*" style="display: none;">
+            </div>
+        </div>
+    </section>
+
+    <footer style="text-align: center; padding: 20px; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border-top: 1px solid rgba(0, 0, 0, 0.1); margin-top: 50px;">
+        <div class="container">
+            <p style="color: #ffffff; font-size: 0.9rem; margin: 0;">© 2025 Lumira - Tüm Hakları Saklıdır</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+    <script src="sayaclar.js"></script>
+</body>
+</html>

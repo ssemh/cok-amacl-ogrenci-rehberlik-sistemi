@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumira - Ödev ve hedef sistemi</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .homework-section {
+            background: linear-gradient(135deg, white, #f8f9fa);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 2rem;
+            margin: 2rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .homework-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+        }
+
+        .homework-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .homework-header h2 {
+            color: var(--text-color);
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .homework-header p {
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+
+        .settings {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            border-radius: var(--border-radius-sm);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: visible;
+        }
+
+        .settings::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%),
+                        linear-gradient(-45deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%),
+                        linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.1) 75%),
+                        linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.1) 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            opacity: 0.1;
+            z-index: 1;
+        }
+
+        .settings-group {
+            position: relative;
+            z-index: 2;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .settings-group label {
+            color: white;
+            font-weight: 500;
+        }
+
+        .settings-group input {
+            padding: 0.8rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius-sm);
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: var(--transition);
+        }
+
+        .settings-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .settings-group input[type="number"] {
+            width: 100px;
+        }
+
+        .settings-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .btn {
+            background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            font-size: 1rem;
+            transition: var(--transition);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        #tableContainer {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 1.2rem;
+            text-align: center;
+        }
+
+        th {
+            background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        .time-slot {
+            font-weight: 600;
+            background: var(--secondary-color);
+            color: var(--text-color);
+        }
+
+        .editable {
+            width: 100%;
+            min-height: 50px;
+            border: none;
+            background: transparent;
+            resize: none;
+            text-align: center;
+            font-family: inherit;
+            font-size: 0.9rem;
+            color: var(--text-color);
+            transition: var(--transition);
+        }
+
+        .editable:focus {
+            outline: 2px solid var(--primary-color);
+            background: white;
+        }
+
+        @media (max-width: 768px) {
+            .settings-group {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .settings-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            th, td {
+                padding: 0.8rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            color: var(--text-light);
+            cursor: pointer;
+            border-radius: var(--border-radius-sm);
+            transition: var(--transition);
+        }
+
+        .tab-btn:hover {
+            color: var(--primary-color);
+            background: rgba(67, 97, 238, 0.05);
+        }
+
+        .tab-btn.active {
+            color: var(--primary-color);
+            background: rgba(67, 97, 238, 0.1);
+            font-weight: 500;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .homework-filters {
+            background: var(--secondary-color);
+            padding: 1.5rem;
+            border-radius: var(--border-radius-sm);
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            font-size: 1rem;
+        }
+
+        .homework-list {
+            display: grid;
+            gap: 1rem;
+            overflow-x: auto;
+        }
+
+        .homework-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 1rem;
+            background: white;
+            border-radius: var(--border-radius-sm);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+        }
+
+        .homework-table th,
+        .homework-table td {
+            border: 1px solid var(--border-color);
+            padding: 1.2rem;
+            text-align: center;
+        }
+
+        .homework-table th {
+            background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        .homework-table tr:hover {
+            background: rgba(67, 97, 238, 0.05);
+        }
+
+        .no-homework {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-light);
+            background: white;
+            border-radius: var(--border-radius-sm);
+            box-shadow: var(--box-shadow);
+        }
+
+        .homework-item {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .homework-item * {
+            cursor: pointer;
+        }
+
+        .homework-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--primary-color), var(--primary-light));
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .homework-item:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--box-shadow);
+        }
+
+        .homework-item:hover::before {
+            opacity: 1;
+        }
+
+        .homework-item.completed {
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.05), rgba(67, 97, 238, 0.1));
+            border-color: var(--primary-color);
+        }
+
+        .homework-item.completed::before {
+            opacity: 1;
+        }
+
+        .homework-item.completed .homework-title {
+            text-decoration: line-through;
+            color: var(--text-light);
+        }
+
+        .homework-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-top: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .homework-details {
+            background: white;
+            border-radius: var(--border-radius-sm);
+            box-shadow: var(--box-shadow);
+            padding: 2rem;
+            margin-top: 1rem;
+        }
+
+        .homework-details-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .homework-details-header h3 {
+            color: var(--text-color);
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        .homework-details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .homework-details-table th,
+        .homework-details-table td {
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            text-align: left;
+        }
+
+        .homework-details-table th {
+            background: var(--secondary-color);
+            color: var(--text-color);
+            font-weight: 600;
+        }
+
+        .homework-details-table tr:hover {
+            background: rgba(67, 97, 238, 0.05);
+        }
+
+        .homework-items {
+            display: grid;
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .homework-filters {
+                flex-direction: column;
+            }
+
+            .filter-group {
+                width: 100%;
+            }
+
+            .filter-group input,
+            .filter-group select {
+                flex: 1;
+            }
+        }
+
+        .delete-btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            position: relative;
+            z-index: 3;
+        }
+
+        .delete-btn:hover {
+            background: #cc0000;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+        }
+
+        .modal-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h3 {
+            color: var(--text-color);
+            margin: 0;
+            font-size: 1.5rem;
+            background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .modal-body {
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            font-size: 1rem;
+            transition: var(--transition);
+            background: #f8f9fa;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+
+        /* Hedefler için yeni stiller */
+        .goals-container {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 2rem;
+        }
+
+        .goals-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .goals-header h3 {
+            color: var(--text-color);
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        .goals-list {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .goal-item {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            padding: 1.5rem;
+            position: relative;
+            transition: all 0.3s ease;
+            animation: slideIn 0.5s ease;
+            overflow: hidden;
+        }
+
+        .goal-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--primary-color), var(--primary-light));
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .goal-item:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--box-shadow);
+        }
+
+        .goal-item:hover::before {
+            opacity: 1;
+        }
+
+        .goal-item.completed {
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.05), rgba(67, 97, 238, 0.1));
+            border-color: var(--primary-color);
+        }
+
+        .goal-item.completed::before {
+            opacity: 1;
+        }
+
+        .goal-item.completed .goal-title {
+            text-decoration: line-through;
+            color: var(--text-light);
+        }
+
+        .goal-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .goal-description {
+            color: var(--text-color);
+            margin-bottom: 1rem;
+        }
+
+        .goal-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .goal-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .goal-checkbox {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            opacity: 0;
+        }
+
+        .goal-checkbox-label {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--primary-color);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .goal-checkbox:checked + .goal-checkbox-label {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+            border-color: transparent;
+        }
+
+        .goal-checkbox:checked + .goal-checkbox-label::after {
+            content: '✓';
+            position: absolute;
+            color: white;
+            font-size: 16px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes checkmark {
+            0% {
+                transform: scale(0);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .goal-checkbox:checked + .goal-checkbox-label::after {
+            animation: checkmark 0.3s ease;
+        }
+
+        .homework-item.completed {
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.05), rgba(67, 97, 238, 0.1));
+            border-color: var(--primary-color);
+        }
+
+        .homework-item.completed .homework-title {
+            text-decoration: line-through;
+            color: var(--text-light);
+        }
+
+        .homework-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .homework-checkbox:checked {
+            accent-color: var(--primary-color);
+        }
+
+        .completion-badge {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-left: 1rem;
+            font-weight: 500;
+        }
+
+        .homework-item.completed {
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.05), rgba(67, 97, 238, 0.1));
+            border-color: var(--primary-color);
+            position: relative;
+        }
+
+        .homework-item.completed::before {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <div class="logo">Lumira</div>
+            <div class="nav-links">
+                <a href="analiz.html"><i class="fas fa-chart-line"></i> Analiz</a>
+                <a href="pano.html"><i class="fas fa-thumbtack"></i> Mantar Pano</a>
+                <a href="oyunlar.html"><i class="fas fa-gamepad"></i> Oyunlar</a>
+                <a href="sayaclar.html"><i class="fas fa-stopwatch"></i> Sayaçlar</a>
+                <a href="homework.html" class="active"><i class="fas fa-tasks"></i> Ödev ve Hedefler</a>
+                <a href="profil.html"><i class="fas fa-user"></i> Profilim</a>
+                <a href="chat.html"><i class="fas fa-robot"></i> Yapay Zeka</a>
+            </div>
+            <div class="menu-button"><i class="fas fa-bars"></i></div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="homework-section">
+            <div class="homework-header">
+                <h2>Haftalık Ödev Programı</h2>
+                <p>Ders programınızı ve ödevlerinizi düzenleyin</p>
+            </div>
+            
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="showTab('program')">Program Oluştur</button>
+                <button class="tab-btn" onclick="showTab('homework')">Ödevlerim</button>
+                <button class="tab-btn" onclick="showTab('goals')">Hedeflerim</button>
+            </div>
+
+            <div id="programTab" class="tab-content active">
+                <div class="settings">
+                    <div class="settings-group">
+                        <label>Günlük Saat Aralığı:</label>
+                        <input type="time" id="startTime" value="08:00"> - 
+                        <input type="time" id="endTime" value="17:00">
+                    </div>
+                    <div class="settings-group">
+                        <label>Ders Süresi:</label>
+                        <input type="number" id="timeInterval" value="40" min="15" max="180" step="5">
+                        <label>dakika</label>
+                        
+                        <label style="margin-left: 20px;">Teneffüs Süresi:</label>
+                        <input type="number" id="breakInterval" value="10" min="5" max="60" step="5">
+                        <label>dakika</label>
+                    </div>
+                    <div class="settings-group">
+                        <label>Gün Sayısı:</label>
+                        <input type="number" id="dayCount" value="7" min="1" max="7">
+                    </div>
+                    <div class="settings-actions">
+                        <button class="btn" onclick="generateTable()">Tabloyu Oluştur</button>
+                        <button class="btn" onclick="saveHomework()">Ödevleri Kaydet</button>
+                    </div>
+                </div>
+                <div id="tableContainer"></div>
+            </div>
+
+            <div id="homeworkTab" class="tab-content">
+                <div class="homework-filters">
+                    <div class="filter-group">
+                        <label>Gün:</label>
+                        <select id="dayFilter">
+                            <option value="">Tümü</option>
+                            <option value="Pazartesi">Pazartesi</option>
+                            <option value="Salı">Salı</option>
+                            <option value="Çarşamba">Çarşamba</option>
+                            <option value="Perşembe">Perşembe</option>
+                            <option value="Cuma">Cuma</option>
+                            <option value="Cumartesi">Cumartesi</option>
+                            <option value="Pazar">Pazar</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="filterHomework()">Filtrele</button>
+                </div>
+
+                <div class="homework-list">
+                    <!-- Ödevler burada listelenecek -->
+                </div>
+            </div>
+
+            <div id="goalsTab" class="tab-content">
+                <div class="goals-container">
+                    <div class="goals-header">
+                        <h3>Hedeflerim</h3>
+                        <button class="btn" onclick="showAddGoalModal()">Yeni Hedef Ekle</button>
+                    </div>
+                    <div class="goals-list">
+                        <!-- Hedefler burada listelenecek -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Lumira. Tüm hakları saklıdır.</p>
+        </div>
+    </footer>
+
+    <!-- Modal Dialog -->
+    <div id="homeworkModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Ödev Başlığı</h3>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="homeworkTitle">Ödev Başlığını Girin:</label>
+                    <input type="text" id="homeworkTitle" placeholder="Ödev başlığı...">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal()">İptal</button>
+                <button class="btn" onclick="saveHomeworkWithTitle()">Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hedef Ekleme Modal -->
+    <div id="goalModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Yeni Hedef Ekle</h3>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="goalTitle">Hedef Başlığı:</label>
+                    <input type="text" id="goalTitle" placeholder="Örn: TYT Matematik 30 Net">
+                </div>
+                <div class="form-group">
+                    <label for="goalDescription">Hedef Açıklaması:</label>
+                    <textarea id="goalDescription" placeholder="Hedefiniz hakkında detaylı bilgi..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeGoalModal()">İptal</button>
+                <button class="btn" onclick="saveGoal()">Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM yüklendikten sonra çalışacak kod
+        document.addEventListener('DOMContentLoaded', function() {
+            // Butonları seç
+            const generateTableBtn = document.getElementById('generateTableBtn');
+            const saveHomeworkBtn = document.getElementById('saveHomeworkBtn');
+
+            // Event listener'ları ekle
+            if (generateTableBtn) {
+                generateTableBtn.addEventListener('click', function() {
+                    console.log('Tabloyu oluştur butonu tıklandı');
+                    generateTable();
+                });
+            }
+
+            if (saveHomeworkBtn) {
+                saveHomeworkBtn.addEventListener('click', function() {
+                    console.log('Ödevleri kaydet butonu tıklandı');
+                    saveHomework();
+                });
+            }
+
+            // Sayfa yüklendiğinde çalışacak kodlar
+            initializePage();
+        });
+
+        function initializePage() {
+            const savedSettings = localStorage.getItem('tableSettings');
+            if (savedSettings) {
+                const settings = JSON.parse(savedSettings);
+                document.getElementById('startTime').value = settings.startTime;
+                document.getElementById('endTime').value = settings.endTime;
+                document.getElementById('timeInterval').value = settings.lessonDuration;
+                document.getElementById('breakInterval').value = settings.breakDuration;
+                document.getElementById('dayCount').value = settings.dayCount;
+            }
+            
+            generateTable();
+            displayGoals();
+        }
+
+        function generateTimeSlots(start, end, lessonDuration, breakDuration) {
+            const timeSlots = [];
+            let current = new Date(`2000-01-01T${start}`);
+            const endTime = new Date(`2000-01-01T${end}`);
+            
+            while (current < endTime) {
+                const lessonStart = current.toTimeString().slice(0, 5);
+                current = new Date(current.getTime() + lessonDuration * 60000);
+                const lessonEnd = current > endTime ? 
+                    endTime.toTimeString().slice(0, 5) : 
+                    current.toTimeString().slice(0, 5);
+                
+                timeSlots.push(`${lessonStart}-${lessonEnd}`);
+                current = new Date(current.getTime() + breakDuration * 60000);
+            }
+            
+            return timeSlots;
+        }
+
+        function getDayName(index) {
+            const days = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
+            return days[index];
+        }
+
+        function generateTable() {
+            console.log('generateTable fonksiyonu çalıştı');
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+            const lessonDuration = parseInt(document.getElementById('timeInterval').value);
+            const breakDuration = parseInt(document.getElementById('breakInterval').value);
+            const dayCount = parseInt(document.getElementById('dayCount').value);
+            
+            if (!startTime || !endTime || !lessonDuration || !breakDuration || !dayCount) {
+                alert('Lütfen tüm alanları doldurun!');
+                return;
+            }
+            
+            const timeSlots = generateTimeSlots(startTime, endTime, lessonDuration, breakDuration);
+            
+            let tableHTML = `
+                <table id="homeworkTable">
+                    <thead>
+                        <tr>
+                            <th>Saat</th>
+            `;
+            
+            for (let i = 0; i < dayCount; i++) {
+                tableHTML += `<th>${getDayName(i)}</th>`;
+            }
+            
+            tableHTML += `</tr></thead><tbody>`;
+            
+            timeSlots.forEach(timeSlot => {
+                tableHTML += `
+                    <tr>
+                        <td class="time-slot">${timeSlot}</td>
+                `;
+                
+                for (let i = 0; i < dayCount; i++) {
+                    tableHTML += `
+                        <td><textarea class="editable" placeholder="Ödev ekle"></textarea></td>
+                    `;
+                }
+                
+                tableHTML += `</tr>`;
+            });
+            
+            tableHTML += `</tbody></table>`;
+            
+            const tableContainer = document.getElementById('tableContainer');
+            if (tableContainer) {
+                tableContainer.innerHTML = tableHTML;
+                
+                // Textarea'ların yüksekliğini otomatik ayarla
+                document.querySelectorAll('.editable').forEach(textarea => {
+                    textarea.addEventListener('input', function() {
+                        this.style.height = 'auto';
+                        this.style.height = this.scrollHeight + 'px';
+                    });
+                });
+
+                // Kaydedilmiş verileri yükle
+                loadSavedData();
+            } else {
+                console.error('tableContainer elementi bulunamadı');
+            }
+        }
+
+        function saveHomework() {
+            console.log('saveHomework fonksiyonu çalıştı');
+            const table = document.getElementById('homeworkTable');
+            if (!table) {
+                alert('Lütfen önce tabloyu oluşturun!');
+                return;
+            }
+
+            // Modal'ı göster
+            const modal = document.getElementById('homeworkModal');
+            if (modal) {
+                modal.style.display = 'flex';
+            } else {
+                console.error('homeworkModal elementi bulunamadı');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('homeworkModal').style.display = 'none';
+            document.getElementById('homeworkTitle').value = '';
+        }
+
+        function saveHomeworkWithTitle() {
+            const title = document.getElementById('homeworkTitle').value.trim();
+            if (!title) {
+                alert('Lütfen bir başlık girin!');
+                return;
+            }
+
+            const settings = {
+                startTime: document.getElementById('startTime').value,
+                endTime: document.getElementById('endTime').value,
+                lessonDuration: document.getElementById('timeInterval').value,
+                breakDuration: document.getElementById('breakInterval').value,
+                dayCount: document.getElementById('dayCount').value
+            };
+            
+            // Mevcut ödev geçmişini al
+            let homeworkHistory = JSON.parse(localStorage.getItem('homeworkHistory') || '[]');
+            
+            // Tablodaki tüm içeriği birleştir
+            const table = document.getElementById('homeworkTable');
+            if (table) {
+                let allContent = '';
+                const rows = table.getElementsByTagName('tr');
+                
+                for (let i = 1; i < rows.length; i++) {
+                    const cells = rows[i].getElementsByTagName('td');
+                    const timeSlot = cells[0].textContent;
+                    
+                    for (let j = 1; j < cells.length; j++) {
+                        const content = cells[j].querySelector('.editable').value.trim();
+                        if (content) {
+                            const dayName = table.rows[0].cells[j].textContent;
+                            allContent += `${dayName} ${timeSlot}:\n${content}\n\n`;
+                        }
+                    }
+                }
+
+                if (allContent) {
+                    const currentDate = new Date();
+                    const dateStr = `${currentDate.getDate().toString().padStart(2, '0')}.${(currentDate.getMonth() + 1).toString().padStart(2, '0')}.${currentDate.getFullYear()}`;
+                    
+                    homeworkHistory.push({
+                        title: title,
+                        content: allContent,
+                        date: dateStr,
+                        day: 'Tüm Günler',
+                        time: 'Tüm Saatler',
+                        timestamp: currentDate.getTime(),
+                        completed: false,
+                        subHomeworks: []
+                    });
+                }
+            }
+            
+            // Ödev geçmişini kaydet
+            localStorage.setItem('homeworkHistory', JSON.stringify(homeworkHistory));
+            localStorage.setItem('tableSettings', JSON.stringify(settings));
+            
+            // Modal'ı kapat
+            closeModal();
+            alert('Ödevler ve ayarlar kaydedildi!');
+            
+            // Ödevler sekmesini güncelle
+            if (document.getElementById('homeworkTab').classList.contains('active')) {
+                displayHomework();
+            }
+        }
+
+        function loadSavedData() {
+            const savedData = localStorage.getItem('homeworkData');
+            if (savedData) {
+                const textareas = document.querySelectorAll('.editable');
+                const data = JSON.parse(savedData);
+                textareas.forEach((textarea, index) => {
+                    if (data[index]) {
+                        textarea.value = data[index];
+                        textarea.style.height = 'auto';
+                        textarea.style.height = textarea.scrollHeight + 'px';
+                    }
+                });
+            }
+        }
+
+        function showTab(tabName) {
+            // Tüm tabları gizle
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Seçili tabı göster
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            document.querySelector(`[onclick="showTab('${tabName}')"]`).classList.add('active');
+
+            if (tabName === 'homework') {
+                displayHomework();
+            }
+        }
+
+        function displayHomework() {
+            const homeworkData = JSON.parse(localStorage.getItem('homeworkHistory') || '[]');
+            const homeworkList = document.querySelector('.homework-list');
+            const selectedDay = document.getElementById('dayFilter').value;
+
+            // Ödevleri filtrele
+            let filteredHomework = homeworkData;
+            if (selectedDay) {
+                filteredHomework = filteredHomework.filter(hw => hw.day === selectedDay);
+            }
+
+            // Gün sıralama düzeni
+            const dayOrder = {
+                'Pazartesi': 1,
+                'Salı': 2,
+                'Çarşamba': 3,
+                'Perşembe': 4,
+                'Cuma': 5,
+                'Cumartesi': 6,
+                'Pazar': 7
+            };
+
+            // Ödevleri günlere göre sırala
+            filteredHomework.sort((a, b) => {
+                // Önce günlere göre sırala
+                const dayComparison = dayOrder[a.day] - dayOrder[b.day];
+                if (dayComparison !== 0) return dayComparison;
+                
+                // Aynı gün içinde saate göre sırala
+                const timeA = a.time.split('-')[0];
+                const timeB = b.time.split('-')[0];
+                return timeA.localeCompare(timeB);
+            });
+
+            if (filteredHomework.length === 0) {
+                homeworkList.innerHTML = '<p class="no-homework">Kayıtlı ödev bulunmamaktadır.</p>';
+                return;
+            }
+
+            // Ödevleri liste formatında göster
+            let homeworkHTML = '<div class="homework-items">';
+            filteredHomework.forEach((homework, index) => {
+                homeworkHTML += `
+                    <div class="homework-item ${homework.completed ? 'completed' : ''}" onclick="showHomeworkDetails(${index})">
+                        <div class="homework-item-header">
+                            <div class="homework-date">${homework.date}</div>
+                            <div class="homework-time">${homework.day} | ${homework.time}</div>
+                            <button class="delete-btn" onclick="event.stopPropagation(); deleteHomework(${index})">Sil</button>
+                        </div>
+                        <div class="homework-title">
+                            ${homework.title}
+                            ${homework.completed ? '<span class="completion-badge">✓ Tamamlandı</span>' : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            homeworkHTML += '</div>';
+            homeworkList.innerHTML = homeworkHTML;
+        }
+
+        function deleteHomework(index) {
+            if (confirm('Bu ödevi silmek istediğinizden emin misiniz?')) {
+                const homeworkData = JSON.parse(localStorage.getItem('homeworkHistory') || '[]');
+                homeworkData.splice(index, 1);
+                localStorage.setItem('homeworkHistory', JSON.stringify(homeworkData));
+                displayHomework();
+            }
+        }
+
+        function showHomeworkDetails(index) {
+            const homeworkData = JSON.parse(localStorage.getItem('homeworkHistory') || '[]');
+            const selectedHomework = homeworkData[index];
+            
+            if (!selectedHomework) return;
+
+            // Gün sıralama düzeni
+            const dayOrder = {
+                'Pazartesi': 1,
+                'Salı': 2,
+                'Çarşamba': 3,
+                'Perşembe': 4,
+                'Cuma': 5,
+                'Cumartesi': 6,
+                'Pazar': 7
+            };
+
+            // Ödev içeriğini parçalara ayır ve sırala
+            const contentLines = selectedHomework.content.split('\n\n');
+            const sortedContent = contentLines
+                .filter(line => line.trim())
+                .map(line => {
+                    const [dayTime, ...contentParts] = line.split('\n');
+                    const [day, time] = dayTime.split(' ');
+                    return {
+                        day,
+                        time,
+                        content: contentParts.join('\n'),
+                        dayOrder: dayOrder[day] || 8
+                    };
+                })
+                .sort((a, b) => {
+                    const dayComparison = a.dayOrder - b.dayOrder;
+                    if (dayComparison !== 0) return dayComparison;
+                    return a.time.localeCompare(b.time);
+                });
+
+            let tableHTML = `
+                <div class="homework-details">
+                    <div class="homework-details-header">
+                        <h3>${selectedHomework.title}</h3>
+                        <button class="btn" onclick="displayHomework()">Geri Dön</button>
+                    </div>
+                    <table class="homework-details-table">
+                        <thead>
+                            <tr>
+                                <th>Gün</th>
+                                <th>Saat</th>
+                                <th>İçerik</th>
+                                <th>Durum</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            // Sıralanmış içeriği tabloya ekle
+            sortedContent.forEach((item) => {
+                // Alt ödevin tamamlanma durumunu kontrol et
+                const subHomework = selectedHomework.subHomeworks?.find(sh => 
+                    sh.day === item.day && sh.time === item.time
+                );
+                const isCompleted = subHomework?.completed || false;
+
+                tableHTML += `
+                    <tr>
+                        <td>${item.day}</td>
+                        <td>${item.time}</td>
+                        <td>${item.content}</td>
+                        <td>
+                            <input type="checkbox" class="homework-checkbox" 
+                                data-index="${index}" 
+                                data-day="${item.day}" 
+                                data-time="${item.time}"
+                                ${isCompleted ? 'checked' : ''}
+                                onchange="toggleHomeworkCompletion(this)">
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            document.querySelector('.homework-list').innerHTML = tableHTML;
+        }
+
+        function filterHomework() {
+            displayHomework();
+        }
+
+        function showAddGoalModal() {
+            document.getElementById('goalModal').style.display = 'flex';
+        }
+
+        function closeGoalModal() {
+            document.getElementById('goalModal').style.display = 'none';
+            document.getElementById('goalTitle').value = '';
+            document.getElementById('goalDescription').value = '';
+        }
+
+        function saveGoal() {
+            const title = document.getElementById('goalTitle').value.trim();
+            const description = document.getElementById('goalDescription').value.trim();
+
+            if (!title) {
+                alert('Lütfen bir hedef başlığı girin!');
+                return;
+            }
+
+            const goals = JSON.parse(localStorage.getItem('goals') || '[]');
+            const newGoal = {
+                id: Date.now(),
+                title,
+                description,
+                completed: false,
+                createdAt: new Date().toISOString()
+            };
+
+            goals.push(newGoal);
+            localStorage.setItem('goals', JSON.stringify(goals));
+            closeGoalModal();
+            displayGoals();
+        }
+
+        function displayGoals() {
+            const goals = JSON.parse(localStorage.getItem('goals') || '[]');
+            const goalsList = document.querySelector('.goals-list');
+
+            if (goals.length === 0) {
+                goalsList.innerHTML = '<p class="no-goals">Henüz hedef eklenmemiş.</p>';
+                return;
+            }
+
+            // Hedefleri tamamlanma durumuna göre sırala
+            const sortedGoals = [...goals].sort((a, b) => {
+                // Tamamlanmamış hedefler önce gelsin
+                if (a.completed && !b.completed) return 1;
+                if (!a.completed && b.completed) return -1;
+                // Aynı durumdaki hedefler oluşturulma tarihine göre sıralansın
+                return new Date(b.createdAt) - new Date(a.createdAt);
+            });
+
+            let goalsHTML = '';
+            sortedGoals.forEach(goal => {
+                goalsHTML += `
+                    <div class="goal-item ${goal.completed ? 'completed' : ''}">
+                        <input type="checkbox" class="goal-checkbox" id="goal-${goal.id}" 
+                            ${goal.completed ? 'checked' : ''} 
+                            onchange="toggleGoal(${goal.id})">
+                        <label for="goal-${goal.id}" class="goal-checkbox-label"></label>
+                        
+                        <div class="goal-title">${goal.title}</div>
+                        <div class="goal-description">${goal.description}</div>
+                        <div class="goal-meta">
+                            <button class="delete-btn" onclick="deleteGoal(${goal.id})">Sil</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            goalsList.innerHTML = goalsHTML;
+        }
+
+        function toggleGoal(goalId) {
+            const goals = JSON.parse(localStorage.getItem('goals') || '[]');
+            const goalIndex = goals.findIndex(g => g.id === goalId);
+            
+            if (goalIndex !== -1) {
+                goals[goalIndex].completed = !goals[goalIndex].completed;
+                localStorage.setItem('goals', JSON.stringify(goals));
+                displayGoals();
+            }
+        }
+
+        function deleteGoal(goalId) {
+            if (confirm('Bu hedefi silmek istediğinizden emin misiniz?')) {
+                const goals = JSON.parse(localStorage.getItem('goals') || '[]');
+                const filteredGoals = goals.filter(g => g.id !== goalId);
+                localStorage.setItem('goals', JSON.stringify(filteredGoals));
+                displayGoals();
+            }
+        }
+
+        function toggleHomeworkCompletion(checkbox) {
+            const index = checkbox.dataset.index;
+            const day = checkbox.dataset.day;
+            const time = checkbox.dataset.time;
+
+            const homeworkData = JSON.parse(localStorage.getItem('homeworkHistory') || '[]');
+            const selectedHomework = homeworkData[index];
+            
+            if (selectedHomework) {
+                // Alt ödevlerin durumlarını al veya oluştur
+                let subHomeworks = selectedHomework.subHomeworks || [];
+                
+                // İşaretlenen alt ödevi bul veya oluştur
+                let subHomework = subHomeworks.find(sh => sh.day === day && sh.time === time);
+                if (!subHomework) {
+                    subHomework = { day, time, completed: false };
+                    subHomeworks.push(subHomework);
+                }
+                
+                // Alt ödevin durumunu güncelle
+                subHomework.completed = checkbox.checked;
+                
+                // Ödev içeriğindeki tüm alt ödevleri al
+                const contentLines = selectedHomework.content.split('\n\n');
+                const allSubHomeworks = contentLines
+                    .filter(line => line.trim())
+                    .map(line => {
+                        const [dayTime] = line.split('\n');
+                        const [day, time] = dayTime.split(' ');
+                        return { day, time };
+                    });
+
+                // Tüm alt ödevlerin durumlarını kontrol et
+                const allCompleted = allSubHomeworks.every(subHw => {
+                    const existingSubHw = subHomeworks.find(sh => 
+                        sh.day === subHw.day && sh.time === subHw.time
+                    );
+                    return existingSubHw?.completed || false;
+                });
+
+                // Ana ödevin durumunu güncelle
+                selectedHomework.completed = allCompleted;
+                selectedHomework.subHomeworks = subHomeworks;
+                
+                // Ödev geçmişini güncelle
+                homeworkData[index] = selectedHomework;
+                localStorage.setItem('homeworkHistory', JSON.stringify(homeworkData));
+                
+                // Detay görünümünü güncelle
+                showHomeworkDetails(index);
+            }
+        }
+    </script>
+</body>
+</html> 

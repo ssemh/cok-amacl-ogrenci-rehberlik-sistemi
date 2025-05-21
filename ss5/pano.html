@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumira - Mantar Pano</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        .board {
+            position: relative;
+            margin: 40px auto;
+            width: var(--board-width, 1200px);
+            min-height: var(--board-height, 600px);
+            padding: 30px;
+            background-image: url('https://img.freepik.com/free-photo/wood-board-background_1339-5417.jpg');
+            background-size: cover;
+            background-position: center;
+            border: 20px solid;
+            border-image: url('https://img.freepik.com/free-photo/brown-wood-textured-background-with-design-space_53876-160425.jpg') 100 stretch;
+            border-radius: 8px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: width 0.3s ease, min-height 0.3s ease;
+        }
+
+        #notesContainer {
+            position: relative;
+            min-height: var(--board-height, 600px);
+            width: var(--board-width, 1200px);
+            z-index: 1;
+            transition: width 0.3s ease, min-height 0.3s ease;
+        }
+
+        .board-background {
+            position: relative;
+            width: 100%;
+            min-height: var(--board-height, 600px);
+            background-image: url('https://img.freepik.com/free-photo/wood-board-background_1339-5417.jpg');
+            background-size: cover;
+            background-position: center;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+            border: 20px solid #8B4513;
+            cursor: pointer;
+            transition: min-height 0.3s ease;
+        }
+
+        .board-background::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            right: -20px;
+            bottom: -20px;
+            border: 20px solid transparent;
+            border-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png') 30 round;
+            border-image-slice: 30;
+            border-image-width: 20px;
+            border-image-outset: 0;
+            pointer-events: none;
+            border-radius: 8px;
+        }
+
+        .note {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transform: rotate(var(--rotation));
+            transition: transform 0.3s ease, border-radius 0.3s ease;
+            cursor: move;
+            user-select: none;
+            position: absolute;
+            min-width: 200px;
+            min-height: 150px;
+            resize: both;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .note.isDailyQuestion {
+            resize: none;
+            cursor: default;
+        }
+
+        .note.rectangle {
+            border-radius: 0;
+        }
+
+        .note.rounded {
+            border-radius: 20px;
+        }
+
+        .note.circle {
+            border-radius: 50%;
+            aspect-ratio: 1;
+        }
+
+        .note.dragging {
+            opacity: 0.5;
+            transform: rotate(0deg);
+            resize: none;
+        }
+
+        .note.editing {
+            transform: rotate(0deg);
+            resize: none;
+        }
+
+        .note-title-input,
+        .note-content-input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding: 5px;
+            outline: none;
+        }
+
+        .note-content-input {
+            font-weight: normal;
+            flex-grow: 1;
+            resize: none;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .note-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .note-content::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+            border-radius: 3px;
+        }
+
+        .note-content::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.2);
+            border-radius: 3px;
+        }
+
+        .note-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(0,0,0,0.3);
+        }
+
+        .note-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .note-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            color: #666;
+            transition: color 0.3s ease;
+            font-size: 14px;
+        }
+
+        .note-actions button:hover {
+            color: #333;
+        }
+
+        .add-note-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+            z-index: 2000;
+        }
+
+        .add-note-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .settings-panel {
+            position: fixed;
+            left: -300px;
+            top: 0;
+            width: 300px;
+            height: 100vh;
+            background-color: #fff;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            transition: left 0.3s ease;
+            z-index: 1000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .settings-panel.open {
+            left: 0;
+        }
+
+        .settings-btn {
+            position: fixed;
+            bottom: 90px;
+            right: 30px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+            z-index: 1001;
+        }
+
+        .settings-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .settings-header h3 {
+            margin: 0;
+            color: #333;
+        }
+
+        .close-settings {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .settings-section {
+            margin-bottom: 20px;
+        }
+
+        .settings-section h4 {
+            margin-bottom: 10px;
+            color: #444;
+        }
+
+        .settings-option {
+            margin-bottom: 15px;
+        }
+
+        .settings-option label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+        }
+
+        .settings-option select,
+        .settings-option input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .settings-option input[type="file"] {
+            display: none;
+        }
+
+        .custom-image-upload {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .upload-btn {
+            background-color: #2196F3;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .upload-btn:hover {
+            background-color: #1976D2;
+        }
+
+        .preview-image {
+            max-width: 100px;
+            max-height: 100px;
+            display: none;
+            border-radius: 4px;
+        }
+
+        .color-picker {
+            position: fixed;
+            display: none;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            z-index: 1000;
+            flex-wrap: wrap;
+            width: 280px;
+        }
+
+        .color-picker.show {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .color-picker-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .color-picker-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .color-picker-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            font-size: 18px;
+            padding: 5px;
+        }
+
+        .color-picker-close:hover {
+            color: #333;
+        }
+
+        .color-gradient {
+            width: 100%;
+            height: 40px;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2), 0 0 0 2px rgba(255,255,255,0.5);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .color-gradient:hover {
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3), 0 0 0 2px rgba(255,255,255,0.7);
+        }
+
+        .color-gradient::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        .color-gradient::-webkit-color-swatch {
+            border: none;
+            border-radius: 8px;
+        }
+
+        .color-options {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .color-option:hover {
+            transform: scale(1.15);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+        }
+
+        .color-option.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 14px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .color-palette-option {
+            width: 100%;
+            height: 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+        }
+
+        .color-palette-option:hover {
+            transform: scale(1.05);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+
+        .daily-question {
+            padding: 10px;
+        }
+
+        .daily-question p {
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .countdown {
+            color: #FF5722 !important;
+            font-weight: bold;
+            font-size: 14px !important;
+            margin-top: 20px !important;
+            text-align: center;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .option-btn {
+            padding: 10px;
+            border: 2px solid;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .option-btn:hover {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <div class="logo">Lumira</div>
+            <div class="nav-links">
+                <a href="analiz.html"><i class="fas fa-chart-line"></i> Analiz</a>
+                <a href="pano.html" class="active"><i class="fas fa-thumbtack"></i> Mantar Pano</a>
+                <a href="oyunlar.html"><i class="fas fa-gamepad"></i> Oyunlar</a>
+                <a href="sayaclar.html"><i class="fas fa-stopwatch"></i> Sayaçlar</a>
+                <a href="homework.html"><i class="fas fa-tasks"></i> Ödev ve Hedefler</a>
+                <a href="profil.html"><i class="fas fa-user"></i> Profilim</a>
+                <a href="chat.html"><i class="fas fa-robot"></i> Yapay Zeka</a>
+            </div>
+            <div class="menu-button">☰</div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="board-header">
+            <div class="header-content">
+                <h2>Mantar Pano</h2>
+                <p>Not eklemek için sağ alttaki "+" butonuna tıklayın,ayarlar için sağ alttaki çark butonuna tıklayın.</p>
+            </div>
+        </div>
+
+        <div class="board">
+            <div id="notesContainer">
+                <!-- Notlar buraya dinamik olarak eklenecek -->
+            </div>
+        </div>
+    </div>
+
+    <button class="settings-btn" onclick="toggleSettings()">
+        <i class="fas fa-cog"></i>
+    </button>
+
+    <button class="add-note-btn" onclick="createNewNote()">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <div class="settings-panel" id="settingsPanel">
+        <div class="settings-header">
+            <h3>Pano Ayarları</h3>
+            <button class="close-settings" onclick="toggleSettings()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="settings-section">
+            <h4>Görünüm</h4>
+            <div class="settings-option">
+                <label for="backgroundSelect">Arka Plan</label>
+                <select id="backgroundSelect" onchange="handleBackgroundChange(this.value)">
+                    <option value="default">Varsayılan</option>
+                    <option value="custom-image">Özel Resim</option>
+                </select>
+            </div>
+
+            <div class="settings-option" id="customImageOption" style="display: none;">
+                <label>Resim Yükle</label>
+                <div class="custom-image-upload">
+                    <label class="upload-btn" for="backgroundImage">Resim Seç</label>
+                    <input type="file" id="backgroundImage" accept="image/*" onchange="handleImageUpload(this)">
+                    <img id="previewImage" class="preview-image" alt="Önizleme">
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h4>Not Ayarları</h4>
+            <div class="settings-option">
+                <label for="defaultNoteShape">Sıradaki Notun Not Şekli</label>
+                <select id="defaultNoteShape" onchange="changeDefaultNoteShape(this.value)">
+                    <option value="rectangle" selected>Dikdörtgen</option>
+                    <option value="rounded">Yuvarlak Köşeli</option>
+                    <option value="circle">Yuvarlak</option>
+                </select>
+            </div>
+            <div class="settings-option">
+                <label for="defaultNoteFont">Sıradaki Notun Yazı Fontu</label>
+                <select id="defaultNoteFont" onchange="changeDefaultNoteFont(this.value)">
+                    <option value="Arial" selected>Arial</option>
+                    <option value="Times New Roman">Times New Roman</option>
+                    <option value="Verdana">Verdana</option>
+                    <option value="Georgia">Georgia</option>
+                    <option value="Courier New">Courier New</option>
+                    <option value="Comic Sans MS">Comic Sans MS</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h4>Pano Ayarları</h4>
+            <div class="settings-option">
+                <label for="boardWidth">Pano Genişliği(min=800,max=1300) </label>
+                <input type="number" id="boardWidth" min="800" max="1300" value="1200" onchange="changeBoardSize()">
+            </div>
+            <div class="settings-option">
+                <label for="boardHeight">Pano Yüksekliği(min=600,max=1500) </label>
+                <input type="number" id="boardHeight" min="600" max="1500" value="600" onchange="changeBoardSize()">
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Lumira. Tüm hakları saklıdır.</p>
+        </div>
+    </footer>
+
+    <script>
+        let notes = JSON.parse(localStorage.getItem('notes')) || [];
+        let draggedNote = null;
+
+        function getRandomRotation() {
+            return Math.random() * 6 - 3;
+        }
+
+        function getRandomPosition() {
+            const container = document.getElementById('notesContainer');
+            const containerRect = container.getBoundingClientRect();
+            const maxX = containerRect.width - 250 - 30;
+            const maxY = containerRect.height - 150 - 30;
+            
+            // Notun pano dışına taşmasını engelle
+            return {
+                x: Math.max(0, Math.min(Math.random() * maxX, maxX)),
+                y: Math.max(0, Math.min(Math.random() * maxY, maxY))
+            };
+        }
+
+        function createNewNote() {
+            const position = getRandomPosition();
+            const note = {
+                id: Date.now(),
+                title: 'Yeni Not',
+                content: 'Not içeriğini buraya yazın...',
+                rotation: getRandomRotation(),
+                x: position.x,
+                y: position.y,
+                width: 250,
+                height: 200,
+                isEditing: true,
+                shape: window.defaultNoteShape || 'rectangle',
+                font: window.defaultNoteFont || 'Arial'
+            };
+
+            notes.push(note);
+            saveNotes();
+            displayNotes();
+
+            // Yeni oluşturulan notu düzenleme moduna al
+            const newNoteElement = document.querySelector(`[data-note-id="${note.id}"]`);
+            if (newNoteElement) {
+                const titleInput = newNoteElement.querySelector('.note-title-input');
+                if (titleInput) {
+                    titleInput.focus();
+                    titleInput.select();
+                }
+            }
+        }
+
+        function deleteNote(id) {
+            // Interval'i temizle
+            if (window.countdownIntervals && window.countdownIntervals[id]) {
+                clearInterval(window.countdownIntervals[id]);
+                delete window.countdownIntervals[id];
+            }
+            
+            notes = notes.filter(note => note.id !== id);
+            saveNotes();
+            displayNotes();
+        }
+
+        function editNote(id) {
+            const note = notes.find(note => note.id === id);
+            if (note) {
+                note.isEditing = true;
+                // Notun mevcut boyutlarını koru
+                const noteElement = document.querySelector(`[data-note-id="${id}"]`);
+                if (noteElement) {
+                    note.width = noteElement.offsetWidth;
+                    note.height = noteElement.offsetHeight;
+                }
+                saveNotes();
+                displayNotes();
+            }
+        }
+
+        function saveNote(id) {
+            const note = notes.find(note => note.id === id);
+            if (note) {
+                const titleInput = document.querySelector(`[data-note-id="${id}"] .note-title-input`);
+                const contentInput = document.querySelector(`[data-note-id="${id}"] .note-content-input`);
+                
+                if (titleInput && contentInput) {
+                    note.title = titleInput.value.trim();
+                    note.content = contentInput.value.trim();
+                    note.isEditing = false;
+                    
+                    saveNotes();
+                    displayNotes();
+                }
+            }
+        }
+
+        function saveNotes() {
+            localStorage.setItem('notes', JSON.stringify(notes));
+        }
+
+        function displayNotes() {
+            const container = document.getElementById('notesContainer');
+            container.innerHTML = '';
+
+            notes.forEach(note => {
+                const noteElement = document.createElement('div');
+                noteElement.className = `note ${note.shape || 'rectangle'} ${note.isEditing ? 'editing' : ''} ${note.isDailyQuestion ? 'isDailyQuestion' : ''}`;
+                noteElement.style.setProperty('--rotation', `${note.rotation}deg`);
+                noteElement.style.left = `${note.x}px`;
+                noteElement.style.top = `${note.y}px`;
+                noteElement.style.width = `${note.width}px`;
+                noteElement.style.height = `${note.height}px`;
+                if (note.backgroundColor) {
+                    noteElement.style.backgroundColor = note.backgroundColor;
+                }
+                noteElement.draggable = !note.isEditing && !note.isDailyQuestion;
+                noteElement.dataset.id = note.id;
+                noteElement.dataset.noteId = note.id;
+
+                if (note.isEditing) {
+                    noteElement.innerHTML = `
+                        <input type="text" class="note-title-input" value="${note.title}" placeholder="Not başlığı" style="color: ${note.textColor || '#000000'}; font-family: ${note.font || 'Arial'}">
+                        <textarea class="note-content-input" placeholder="Not içeriği" style="color: ${note.textColor || '#000000'}; font-family: ${note.font || 'Arial'}">${note.content}</textarea>
+                        <div class="note-actions">
+                            <button onclick="saveNote(${note.id})" title="Kaydet">
+                                <i class="fas fa-save"></i>
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    // Günün sorusu için özel görünüm
+                    if (note.isDailyQuestion) {
+                        noteElement.innerHTML = `
+                            <div class="note-header">
+                                <h3 style="color: ${note.textColor || '#000000'}; font-family: ${note.font || 'Arial'}">${note.title}</h3>
+                            </div>
+                            <div class="note-content">
+                                ${note.content}
+                            </div>
+                        `;
+                    } else {
+                        // Normal notlar için standart görünüm
+                        noteElement.innerHTML = `
+                            <div class="note-header">
+                                <h3 style="color: ${note.textColor || '#000000'}; font-family: ${note.font || 'Arial'}">${note.title}</h3>
+                                <div class="note-actions">
+                                    <button onclick="editNote(${note.id})" title="Düzenle">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="showColorPicker('text', ${note.id})" title="Yazı Rengi">
+                                        <i class="fas fa-font"></i>
+                                    </button>
+                                    <button onclick="showColorPicker('note', ${note.id})" title="Not Rengi">
+                                        <i class="fas fa-palette"></i>
+                                    </button>
+                                    <button onclick="deleteNote(${note.id})" title="Sil">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="note-content">
+                                <p style="color: ${note.textColor || '#000000'}; font-family: ${note.font || 'Arial'}">${note.content}</p>
+                            </div>
+                        `;
+                    }
+                }
+
+                if (!note.isEditing && !note.isDailyQuestion) {
+                    noteElement.addEventListener('dragstart', handleDragStart);
+                    noteElement.addEventListener('dragend', handleDragEnd);
+                }
+
+                container.appendChild(noteElement);
+            });
+        }
+
+        function handleDragStart(e) {
+            draggedNote = this;
+            this.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', this.dataset.id);
+        }
+
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+            draggedNote = null;
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const id = e.dataTransfer.getData('text/plain');
+            const note = notes.find(n => n.id === parseInt(id));
+            
+            if (note) {
+                const container = document.getElementById('notesContainer');
+                const containerRect = container.getBoundingClientRect();
+                
+                // Notun yeni konumunu hesapla
+                let newX = e.clientX - containerRect.left - (note.width / 2);
+                let newY = e.clientY - containerRect.top - (note.height / 2);
+                
+                // Notun pano dışına taşmasını engelle
+                if (newX < 0) newX = 0;
+                if (newY < 0) newY = 0;
+                if (newX + note.width > containerRect.width - 30) {
+                    newX = containerRect.width - note.width - 30;
+                }
+                if (newY + note.height > containerRect.height - 30) {
+                    newY = containerRect.height - note.height - 30;
+                }
+                
+                note.x = newX;
+                note.y = newY;
+                
+                saveNotes();
+                displayNotes();
+            }
+        }
+
+        // Event listeners for drag and drop
+        document.getElementById('notesContainer').addEventListener('dragover', handleDragOver);
+        document.getElementById('notesContainer').addEventListener('drop', handleDrop);
+
+        function toggleSettings() {
+            const settingsPanel = document.getElementById('settingsPanel');
+            settingsPanel.classList.toggle('open');
+        }
+
+        function handleBackgroundChange(value) {
+            const customImageOption = document.getElementById('customImageOption');
+            const board = document.querySelector('.board');
+            const boardBackground = document.querySelector('.board-background');
+
+            // Tüm seçenekleri gizle
+            customImageOption.style.display = 'none';
+
+            // Seçilen seçeneğe göre işlem yap
+            switch(value) {
+                case 'default':
+                    board.style.backgroundImage = 'url("https://img.freepik.com/free-photo/wood-board-background_1339-5417.jpg")';
+                    boardBackground.style.backgroundImage = 'url("https://img.freepik.com/free-photo/wood-board-background_1339-5417.jpg")';
+                    boardBackground.style.backgroundColor = 'transparent';
+                    break;
+                case 'custom-image':
+                    customImageOption.style.display = 'block';
+                    break;
+            }
+        }
+
+        function handleImageUpload(input) {
+            const preview = document.getElementById('previewImage');
+            const board = document.querySelector('.board');
+            const boardBackground = document.querySelector('.board-background');
+
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    board.style.backgroundImage = `url('${e.target.result}')`;
+                    boardBackground.style.backgroundImage = `url('${e.target.result}')`;
+                    boardBackground.style.backgroundColor = 'transparent';
+                }
+
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function changeDefaultNoteShape(shape) {
+            window.defaultNoteShape = shape;
+        }
+
+        function changeDefaultNoteFont(font) {
+            window.defaultNoteFont = font;
+        }
+
+        function showColorPicker(type, noteId) {
+            // Önceki renk seçiciyi kaldır
+            const existingPicker = document.querySelector('.color-picker');
+            if (existingPicker) {
+                existingPicker.remove();
+            }
+
+            // Yeni renk seçici oluştur
+            const picker = document.createElement('div');
+            picker.className = 'color-picker show';
+            
+            // Başlık ve kapatma butonu
+            const header = document.createElement('div');
+            header.className = 'color-picker-header';
+            
+            const title = document.createElement('div');
+            title.className = 'color-picker-title';
+            title.textContent = type === 'text' ? 'Yazı Rengi Seç' : 'Not Rengi Seç';
+            
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'color-picker-close';
+            closeBtn.innerHTML = '<i class="fas fa-times"></i>';
+            closeBtn.onclick = () => picker.remove();
+            
+            header.appendChild(title);
+            header.appendChild(closeBtn);
+            picker.appendChild(header);
+            
+            // Renk gradyanı
+            const gradientInput = document.createElement('input');
+            gradientInput.type = 'color';
+            gradientInput.className = 'color-gradient';
+            gradientInput.value = type === 'text' ? '#000000' : '#FFFFFF';
+            gradientInput.onchange = (e) => {
+                if (type === 'text') {
+                    changeTextColor(noteId, e.target.value);
+                } else {
+                    changeNoteColor(noteId, e.target.value);
+                }
+            };
+            picker.appendChild(gradientInput);
+
+            // Temel renkler
+            const colors = type === 'text' ? 
+                ['#000000', '#FF0000', '#00FF00', '#0000FF', '#FFA500', '#800080',
+                 '#FFD700', '#00FFFF', '#FF00FF', '#008000', '#000080', '#800000'] :
+                ['#FFFFFF', '#FFFACD', '#E6E6FA', '#F0FFF0', '#FFE4E1', '#F0F8FF',
+                 '#F5F5DC', '#FFE4C4', '#E0FFFF', '#F0E68C', '#DDA0DD', '#98FB98'];
+
+            const colorOptions = document.createElement('div');
+            colorOptions.className = 'color-options';
+
+            colors.forEach(color => {
+                const option = document.createElement('div');
+                option.className = 'color-option';
+                option.style.backgroundColor = color;
+                option.onclick = () => {
+                    if (type === 'text') {
+                        changeTextColor(noteId, color);
+                    } else {
+                        changeNoteColor(noteId, color);
+                    }
+                    // Seçili rengi işaretle
+                    document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+                };
+                colorOptions.appendChild(option);
+            });
+
+            picker.appendChild(colorOptions);
+
+            // Renk seçiciyi konumlandır
+            const button = document.querySelector(`[data-note-id="${noteId}"] [title="${type === 'text' ? 'Yazı Rengi' : 'Not Rengi'}"]`);
+            if (button) {
+                const rect = button.getBoundingClientRect();
+                picker.style.top = `${rect.bottom + window.scrollY + 5}px`;
+                picker.style.left = `${rect.left + window.scrollX}px`;
+                document.body.appendChild(picker);
+            }
+
+            // Dışarı tıklandığında kapat
+            const closePicker = (e) => {
+                if (!picker.contains(e.target) && e.target !== button) {
+                    picker.remove();
+                    document.removeEventListener('click', closePicker);
+                }
+            };
+            setTimeout(() => document.addEventListener('click', closePicker), 0);
+        }
+
+        function changeTextColor(noteId, color) {
+            const note = notes.find(note => note.id === noteId);
+            if (note) {
+                note.textColor = color;
+                saveNotes();
+                displayNotes();
+            }
+        }
+
+        function changeNoteColor(noteId, color) {
+            const note = notes.find(note => note.id === noteId);
+            if (note) {
+                note.backgroundColor = color;
+                saveNotes();
+                displayNotes();
+            }
+        }
+
+        function changeBoardSize() {
+            const width = document.getElementById('boardWidth').value;
+            const height = document.getElementById('boardHeight').value;
+            
+            // Minimum ve maksimum değerleri kontrol et
+            if (width < 800) width = 800;
+            if (width > 1300) width = 1300;
+            if (height < 600) height = 600;
+            if (height > 1500) height = 1500;
+            
+            // Pano boyutlarını güncelle
+            document.documentElement.style.setProperty('--board-width', `${width}px`);
+            document.documentElement.style.setProperty('--board-height', `${height}px`);
+            
+            // Notların konumlarını kontrol et ve gerekirse düzelt
+            checkNotePositions();
+        }
+
+        function checkNotePositions() {
+            const container = document.getElementById('notesContainer');
+            const containerRect = container.getBoundingClientRect();
+            
+            notes.forEach(note => {
+                // Notun konumunu kontrol et
+                if (note.x < 0) note.x = 0;
+                if (note.y < 0) note.y = 0;
+                if (note.x + note.width > containerRect.width - 30) {
+                    note.x = containerRect.width - note.width - 30;
+                }
+                if (note.y + note.height > containerRect.height - 30) {
+                    note.y = containerRect.height - note.height - 30;
+                }
+            });
+            
+            saveNotes();
+            displayNotes();
+        }
+
+        // Günün sorusu için soru bankası
+        const dailyQuestions = [
+            {
+                subject: "Matematik",
+                question: "Bir üçgenin iç açıları toplamı kaç derecedir?",
+                options: ["90", "180", "270", "360"],
+                correctAnswer: "180"
+            },
+            {
+                subject: "Fizik",
+                question: "Aşağıdakilerden hangisi bir kuvvet birimi değildir?",
+                options: ["Newton", "Joule", "Dyne", "Kilogram-kuvvet"],
+                correctAnswer: "Joule"
+            },
+            {
+                subject: "Kimya",
+                question: "Periyodik tabloda en çok element hangi grupta bulunur?",
+                options: ["1A", "2A", "3A", "4A"],
+                correctAnswer: "3A"
+            },
+            {
+                subject: "Biyoloji",
+                question: "İnsan vücudunda en büyük organ hangisidir?",
+                options: ["Kalp", "Beyin", "Deri", "Karaciğer"],
+                correctAnswer: "Deri"
+            },
+            {
+                subject: "Matematik",
+                question: "Bir dairenin çevresi nasıl hesaplanır?",
+                options: ["2πr", "πr²", "2πr²", "πr"],
+                correctAnswer: "2πr"
+            },
+            {
+                subject: "Fizik",
+                question: "Işık hangi hızla hareket eder?",
+                options: ["299,792,458 m/s", "299,792,458 km/s", "299,792,458 m/dk", "299,792,458 km/dk"],
+                correctAnswer: "299,792,458 m/s"
+            },
+            {
+                subject: "Kimya",
+                question: "Suyun kimyasal formülü nedir?",
+                options: ["H2O", "CO2", "O2", "H2"],
+                correctAnswer: "H2O"
+            },
+            {
+                subject: "Biyoloji",
+                question: "İnsan vücudunda kaç kemik bulunur?",
+                options: ["206", "186", "216", "196"],
+                correctAnswer: "206"
+            }
+        ];
+
+        function getDailyQuestionIndex() {
+            const today = new Date().toDateString();
+            const lastQuestionDate = localStorage.getItem('lastQuestionDate');
+            const lastQuestionIndex = parseInt(localStorage.getItem('lastQuestionIndex')) || -1;
+
+            // Eğer bugün soru sorulmadıysa
+            if (lastQuestionDate !== today) {
+                // Yeni bir soru indeksi seç (son sorudan farklı olacak şekilde)
+                let newIndex;
+                do {
+                    newIndex = Math.floor(Math.random() * dailyQuestions.length);
+                } while (newIndex === lastQuestionIndex && dailyQuestions.length > 1);
+
+                // Yeni tarih ve indeksi kaydet
+                localStorage.setItem('lastQuestionDate', today);
+                localStorage.setItem('lastQuestionIndex', newIndex);
+                return newIndex;
+            }
+
+            // Bugün soru sorulmuşsa, son soruyu döndür
+            return lastQuestionIndex;
+        }
+
+        // Günün sorusu için renk kombinasyonları
+        const colorCombinations = [
+            {
+                background: '#FFFACD', // Açık sarı
+                text: '#000000',
+                buttonBg: '#FFFFFF',
+                buttonBorder: '#FFD700'
+            },
+            {
+                background: '#E6E6FA', // Lavanta
+                text: '#4B0082',
+                buttonBg: '#FFFFFF',
+                buttonBorder: '#9370DB'
+            },
+            {
+                background: '#F0FFF0', // Bal özü
+                text: '#006400',
+                buttonBg: '#FFFFFF',
+                buttonBorder: '#98FB98'
+            },
+            {
+                background: '#FFE4E1', // Misty Rose
+                text: '#8B0000',
+                buttonBg: '#FFFFFF',
+                buttonBorder: '#FFA07A'
+            },
+            {
+                background: '#F0F8FF', // Alice Blue
+                text: '#000080',
+                buttonBg: '#FFFFFF',
+                buttonBorder: '#87CEEB'
+            },
+            {
+                background: '#F5F5DC', // Beige
+                text: '#8B4513',
+                buttonBg: '#FFFFFF',
+                buttonBorder: '#DEB887'
+            },
+            {
+                background: '#FFE4C4', // Bisque
+                text: '#8B4513',
+                buttonBg: '#FFFFFF',
+                buttonBorder: '#D2691E'
+            },
+            {
+                background: '#E0FFFF', // Light Cyan
+                text: '#008B8B',
+                buttonBg: '#FFFFFF',
+                buttonBorder: '#20B2AA'
+            }
+        ];
+
+        function getRandomColorCombination() {
+            return colorCombinations[Math.floor(Math.random() * colorCombinations.length)];
+        }
+
+        function showDailyQuestion() {
+            const today = new Date().toDateString();
+            const lastQuestionDate = localStorage.getItem('lastQuestionDate');
+
+            // Eğer bugün soru sorulmuşsa ve not hala varsa, yeni soru gösterme
+            if (lastQuestionDate === today && notes.some(note => note.isDailyQuestion)) {
+                return;
+            }
+
+            // Günün sorusunu al
+            const questionIndex = getDailyQuestionIndex();
+            const randomQuestion = dailyQuestions[questionIndex];
+            
+            // Rastgele renk kombinasyonu seç
+            const colors = getRandomColorCombination();
+            
+            // Not oluştur
+            const noteId = Date.now();
+            const note = {
+                id: noteId,
+                title: `Günün Sorusu - ${randomQuestion.subject}`,
+                content: `
+                    <div class="daily-question" style="color: ${colors.text}">
+                        <p>${randomQuestion.question}</p>
+                        <div class="options">
+                            ${randomQuestion.options.map((option, index) => `
+                                <button class="option-btn" onclick="checkAnswer(${noteId}, '${option}', '${randomQuestion.correctAnswer}')" 
+                                    style="background-color: ${colors.buttonBg}; border-color: ${colors.buttonBorder}; color: ${colors.text}">
+                                    ${option}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `,
+                rotation: 0,
+                x: 20,
+                y: 20,
+                width: 300,
+                height: 250,
+                isEditing: false,
+                shape: 'rounded',
+                font: 'Arial',
+                backgroundColor: colors.background,
+                textColor: colors.text,
+                isDailyQuestion: true
+            };
+
+            // Eğer varsa eski günün sorusunu sil
+            notes = notes.filter(note => !note.isDailyQuestion);
+            
+            notes.push(note);
+            saveNotes();
+            displayNotes();
+        }
+
+        function checkAnswer(noteId, selectedAnswer, correctAnswer) {
+            const note = notes.find(note => note.id === noteId);
+            if (note) {
+                const isCorrect = selectedAnswer === correctAnswer;
+                let countdown = 10;
+                
+                // Önceki interval'i temizle
+                if (window.countdownIntervals && window.countdownIntervals[noteId]) {
+                    clearInterval(window.countdownIntervals[noteId]);
+                }
+                
+                // Interval'i global olarak sakla
+                if (!window.countdownIntervals) {
+                    window.countdownIntervals = {};
+                }
+                
+                // Geri sayım başlat
+                window.countdownIntervals[noteId] = setInterval(() => {
+                    countdown--;
+                    
+                    // Not hala var mı kontrol et
+                    const noteStillExists = notes.some(n => n.id === noteId);
+                    if (!noteStillExists) {
+                        clearInterval(window.countdownIntervals[noteId]);
+                        delete window.countdownIntervals[noteId];
+                        return;
+                    }
+                    
+                    note.content = `
+                        <div class="daily-question" style="color: ${note.textColor}">
+                            <p>${isCorrect ? '✅ Doğru!' : '❌ Yanlış!'}</p>
+                            <p>Doğru cevap: ${correctAnswer}</p>
+                            <p class="countdown">Bu not ${countdown} saniye sonra kaybolacak...</p>
+                        </div>
+                    `;
+                    saveNotes();
+                    displayNotes();
+
+                    if (countdown <= 0) {
+                        clearInterval(window.countdownIntervals[noteId]);
+                        delete window.countdownIntervals[noteId];
+                        deleteNote(noteId);
+                    }
+                }, 1000);
+            }
+        }
+
+        // Sayfa yüklendiğinde notları göster
+        displayNotes();
+
+        // Sayfa yüklendiğinde varsayılan not şeklini ve fontunu ayarla
+        window.defaultNoteShape = 'rectangle';
+        window.defaultNoteFont = 'Arial';
+
+        // Sayfa yüklendiğinde varsayılan pano boyutlarını ayarla
+        document.documentElement.style.setProperty('--board-width', '1200px');
+        document.documentElement.style.setProperty('--board-height', '600px');
+
+        // Sayfa yüklendiğinde günün sorusunu göster
+        window.addEventListener('load', function() {
+            if (window.countdownIntervals) {
+                Object.values(window.countdownIntervals).forEach(interval => {
+                    clearInterval(interval);
+                });
+                window.countdownIntervals = {};
+            }
+            showDailyQuestion();
+        });
+
+        // Sayfa kapatıldığında tüm interval'leri temizle
+        window.addEventListener('beforeunload', function() {
+            if (window.countdownIntervals) {
+                Object.values(window.countdownIntervals).forEach(interval => {
+                    clearInterval(interval);
+                });
+                window.countdownIntervals = {};
+            }
+        });
+    </script>
+</body>
+</html> 
