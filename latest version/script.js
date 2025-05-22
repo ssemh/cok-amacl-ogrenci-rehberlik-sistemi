@@ -2,10 +2,10 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Varsayılan kullanıcıyı oluştur ve kaydet
     const defaultUser = {
-        fullname: "Ahmet Yılmaz",
-        email: "ahmet@example.com",
-        password: "2121",
-        school: "İstanbul Lisesi",
+        fullname: "Demo Kullanıcı",
+        email: "demo@example.com",
+        // Şifre artık kullanıcı girişi sırasında oluşturulacak
+        school: "Demo Okul",
         grade: "12",
         createdAt: new Date().toISOString()
     };
@@ -15,9 +15,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Eğer bu e-posta ile kayıtlı kullanıcı yoksa ekle
     if (!users.some(user => user.email === defaultUser.email)) {
+       // Demo kullanıcısı için güvenli bir şifre oluştur
+        const demoPassword = Math.random().toString(36).slice(-8); // 8 karakterlik rastgele şifre
+        defaultUser.password = demoPassword;
         users.push(defaultUser);
         localStorage.setItem('users', JSON.stringify(users));
-        console.log('Varsayılan kullanıcı oluşturuldu:', defaultUser);
+        console.log('Demo kullanıcı oluşturuldu. E-posta:', defaultUser.email);
+        // Şifreyi konsola yazdır (sadece geliştirme aşamasında)
+        console.log('Demo şifre:', demoPassword);
     }
 
     // Giriş formu
